@@ -22,7 +22,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import Container from "../components/container.vue";
 import HeaderInput from "../components/HeaderInput.vue";
-import { RoomConfigurationModel } from "../models/RoomConfigurationModel";
+import { RoomConfiguration } from "../models/RoomConfiguration";
 
 // TODO: セッションを削除できるようにする
 // TODO: ルーム名、セッション名のバリデーションを行う
@@ -34,7 +34,7 @@ import { RoomConfigurationModel } from "../models/RoomConfigurationModel";
   }
 })
 export default class New extends Vue {
-  roomConfig: RoomConfigurationModel = new RoomConfigurationModel();
+  roomConfig: RoomConfiguration = new RoomConfiguration();
 
   addSession() {
     this.roomConfig.sessions.push({ title: "" });

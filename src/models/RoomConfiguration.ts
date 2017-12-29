@@ -1,14 +1,14 @@
-export interface SessionModel {
+export interface Session {
     title: string;
 }
 
-export class RoomConfigurationModel {
+export class RoomConfiguration {
     /**
      * ルーム名
      */
     roomName: string;
 
-    sessions: SessionModel[];
+    sessions: Session[];
 
     constructor() {
         this.roomName = "";

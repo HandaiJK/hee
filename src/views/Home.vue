@@ -4,16 +4,20 @@
     <h1 id="title">
       内製へぇシステム
     </h1>
-    <form action="aa">
-<input id="room" type="text" placeholder="ルーム名を入力...">
-<input id="enter" type="submit" value="ルームに参加する">
+    <form>
+      <input id="room" type="text" placeholder="ルーム名を入力..." v-model="roomName">
     </form>
+    <button @click="requestJoinRoom" :disabled="!isValidRoomName || roomJoining">ルームに参加する</button>
+    <p class="progress-message" v-show="roomJoiningMessageVisible">
+      参加しています...
+    </p>
+    <p class="progress-message failed" v-show="roomJoinFailedMessageVisible">
+      ルームの参加に失敗しました
+    </p>
   </div>
   <div>
     <p id="mataha">または</p>
-<form action="bb">
-  <input type="submit" value="ルームを作成する">
-</form>
+    <button @click="createNewRoom" :disabled="roomJoining">ルームを作成する</button>
   </div>
 </container>
 </template>
@@ -22,13 +26,46 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import Container from "../components/container.vue";
+import { types } from "../vuex/types";
 
 @Component({
   components: {
     Container
   }
 })
-export default class Home extends Vue {}
+export default class Home extends Vue {
+  roomName: string = "";
+
+  get state() {
+    return this.$store.state;
+  }
+
+  get roomJoiningMessageVisible(): boolean {
+    return this.roomJoining;
+  }
+
+  get roomJoinFailedMessageVisible(): boolean {
+    return this.state.roomJoinState === "failed";
+  }
+
+  get roomJoining(): boolean {
+    // ルーム参加中はボタンを押せないようにする
+    return this.state.roomJoinState === "joining";
+  }
+
+  get isValidRoomName(): boolean {
+    // TODO: ルーム名の制約を決めて、バリデーションをきっちりやる
+    return this.roomName.length > 0;
+  }
+
+  requestJoinRoom() {
+    this.$store.dispatch("joinRoom", this.roomName);
+  }
+
+  createNewRoom() {
+    this.$store.dispatch("createRoom");
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -58,6 +95,17 @@ input#enter {
 p#mataha {
   color: gray;
   margin: 4px;
+}
+
+p.progress-message {
+  color: gray;
+  font-size: 12px;
+  font-family: "Roboto", sans-serif;
+  margin: 0;
+
+  &.failed {
+    color: red;
+  }
 }
 </style>
 
