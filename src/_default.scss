@@ -10,4 +10,15 @@ body{
             color: #fff !important;
         }
     }
+
+p.progress-message {
+  color: gray;
+  font-size: 12px;
+  font-family: "Roboto", sans-serif;
+  margin: 0;
+
+  &.error {
+    color: red;
+  }
+}
 }

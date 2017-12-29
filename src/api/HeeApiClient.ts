@@ -2,20 +2,26 @@ import { RoomConfiguration } from "../models/RoomConfiguration";
 import { resolve } from "url";
 
 class HeeApiClient {
+    private static DUMMY_ROOMS = [
+        "myroom1",
+        "myroom2",
+        "myroom3"
+    ];
 
-    createRoom(roomConfig: RoomConfiguration) {
-
+    createRoom(roomConfig: RoomConfiguration): Promise<RoomAdminApiClient | undefined> {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                HeeApiClient.DUMMY_ROOMS.indexOf(roomConfig.roomName) >= 0
+                    ? resolve(new RoomAdminApiClient())
+                    : resolve(undefined);
+            }, 1000);
+        });
     }
 
     joinRoom(roomName: string): Promise<RoomApiClient | undefined> {
-        const rooms = [
-            "myroom1",
-            "myroom2",
-            "myroom3"
-        ];
         return new Promise((resolve) => {
             setTimeout(() => {
-                rooms.indexOf(roomName) >= 0
+                HeeApiClient.DUMMY_ROOMS.indexOf(roomName) >= 0
                     ? resolve(new RoomApiClient())
                     : resolve(undefined);
             }, 1000);
@@ -24,6 +30,10 @@ class HeeApiClient {
 }
 
 class RoomApiClient {
+
+}
+
+class RoomAdminApiClient extends RoomApiClient {
 
 }
 

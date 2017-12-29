@@ -11,7 +11,7 @@
     <p class="progress-message" v-show="roomJoiningMessageVisible">
       参加しています...
     </p>
-    <p class="progress-message failed" v-show="roomJoinFailedMessageVisible">
+    <p class="progress-message error" v-show="roomJoinFailedMessageVisible">
       ルームの参加に失敗しました
     </p>
   </div>
@@ -63,7 +63,7 @@ export default class Home extends Vue {
   }
 
   createNewRoom() {
-    this.$store.dispatch("createRoom");
+    this.$store.dispatch("navigateToNewPage");
   }
 }
 </script>
@@ -95,17 +95,6 @@ input#enter {
 p#mataha {
   color: gray;
   margin: 4px;
-}
-
-p.progress-message {
-  color: gray;
-  font-size: 12px;
-  font-family: "Roboto", sans-serif;
-  margin: 0;
-
-  &.failed {
-    color: red;
-  }
 }
 </style>
 

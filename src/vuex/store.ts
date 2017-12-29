@@ -7,26 +7,43 @@ Vue.use(Vuex);
 import { client } from "../api/HeeApiClient";
 import { types } from "./types";
 import { router } from "../router";
-import { watch } from "fs";
+import { RoomConfiguration } from "../models/RoomConfiguration";
 
 
 type RoomJoinState = "normal" | "joining" | "failed";
+type RoomCreateState = "normal" | "creating" | "failed";
 
 export interface AppState {
     roomJoinState: RoomJoinState;
+    roomCreateState: RoomCreateState;
 }
 const options: StoreOptions<AppState> = {
     state: {
-        roomJoinState: "normal"
+        roomJoinState: "normal",
+        roomCreateState: "normal"
     },
     mutations: {
         changeRoomJoinState(s, newState: RoomJoinState) {
             s.roomJoinState = newState;
+        },
+        changeRoomCreateState(s, newState: RoomCreateState) {
+            s.roomCreateState = newState;
         }
     },
     actions: {
-        createRoom(ctx, payload) {
+        navigateToNewPage(ctx, payload) {
             router.push({ path: "/new" });
+        },
+        async requestCreateNewRoom({ commit }, roomConfig: RoomConfiguration) {
+            // ルーム作成中
+            commit(types.CHANGE_ROOM_CREATE_STATE, "creating");
+            const roomAdminClient = await client.createRoom(roomConfig);
+            if (roomAdminClient !== undefined) {
+                // 管理画面に遷移する
+                router.push({ path: "/admin" });
+            } else {
+                commit(types.CHANGE_ROOM_CREATE_STATE, "failed");
+            }
         },
         async joinRoom({ commit }, roomName: string) {
             // ルーム参加中

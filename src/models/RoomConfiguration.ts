@@ -10,9 +10,9 @@ export class RoomConfiguration {
 
     sessions: Session[];
 
-    constructor() {
-        this.roomName = "";
-        this.sessions = [{ title: "" }, { title: "" }, { title: "" }];
+    constructor(roomName: string = "", sessions: Session[] = []) {
+        this.roomName = roomName;
+        this.sessions = sessions;
     }
 
     toString(): string {
