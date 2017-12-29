@@ -26,7 +26,6 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import Container from "../components/container.vue";
-import { types } from "../vuex/types";
 
 @Component({
   components: {

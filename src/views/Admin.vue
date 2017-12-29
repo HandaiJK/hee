@@ -17,19 +17,25 @@
         </h3>
         <div>
             <span class="session-number">
-                #1
+                {{ currentSessionNumber }}
             </span>
             <span class="session-title">
-                スマート研究室を作ろう
+                {{ currentSessionTitle }}
             </span>
         </div>
         <div>
             <span>
-                <button>前のセッションへ</button>
+                <button @click="requestGotoPreviousSession" :disabled="isGotoPreviousSessionButtonDisabled">前のセッションへ</button>
             </span>
             <span>
-                <button>次のセッションへ</button>
+                <button @click="requestGotoNextSession" :disabled="isGotoNextSessionButtonDisabled">次のセッションへ</button>
             </span>
+            <span class="progress-message" v-show="sessionChanging">
+                セッションを移動中です...
+            </span>
+        </div>
+        <div>
+            <p class="progress-message error" v-show="sessionChangeFailed">セッションの移動に失敗しました</p>
         </div>
     </section>
     <section>
@@ -52,6 +58,8 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import Container from "../components/container.vue";
+import { actiontypes } from "../vuex/types";
+import { SessionInfo } from "../api/HeeApiClient";
 
 @Component({
   components: {
@@ -60,6 +68,52 @@ import Container from "../components/container.vue";
 })
 export default class Admin extends Vue {
   isReactionsEnabled = true;
+
+  requestGotoPreviousSession() {
+    this.$store.dispatch(actiontypes.REQUEST_GOTO_PREVIOUS_SESSION);
+  }
+
+  requestGotoNextSession() {
+    this.$store.dispatch(actiontypes.REQUEST_GOTO_NEXT_SESSION);
+  }
+
+  private get currentSession(): SessionInfo | undefined {
+    return this.$store.state.currentSession;
+  }
+
+  get currentSessionNumber(): string {
+    return this.currentSession !== undefined
+      ? "#" + this.currentSession.sessionNumber.toString()
+      : "--";
+  }
+
+  get currentSessionTitle(): string {
+    return this.currentSession !== undefined ? this.currentSession.title : "--";
+  }
+
+  get sessionChanging(): boolean {
+    return this.$store.state.sessionState === "changing";
+  }
+
+  get sessionChangeFailed(): boolean {
+    return this.$store.state.sessionState === "failed";
+  }
+
+  get isGotoNextSessionButtonDisabled(): boolean {
+    return (
+      this.sessionChanging ||
+      this.currentSession === undefined ||
+      this.currentSession.attr.isLast
+    );
+  }
+
+  get isGotoPreviousSessionButtonDisabled(): boolean {
+    return (
+      this.sessionChanging ||
+      this.currentSession === undefined ||
+      this.currentSession.attr.isFirst
+    );
+  }
 }
 </script>
 
@@ -87,4 +141,3 @@ span.session-title {
   font-weight: bold;
 }
 </style>
-

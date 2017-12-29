@@ -4,23 +4,40 @@ import Vue from "vue";
 import Vuex from "vuex";
 import { Store, StoreOptions } from "vuex";
 Vue.use(Vuex);
-import { client } from "../api/HeeApiClient";
-import { types } from "./types";
+import { client, RoomAdminApiClient } from "../api/HeeApiClient";
+import { mutationtypes } from "./types";
 import { router } from "../router";
 import { RoomConfiguration } from "../models/RoomConfiguration";
+import { SessionInfo } from "../api/HeeApiClient";
+import { start } from "repl";
+import { watch } from "fs";
+import { fail } from "assert";
 
 
 type RoomJoinState = "normal" | "joining" | "failed";
 type RoomCreateState = "normal" | "creating" | "failed";
+type SessionState = "normal" | "changing" | "failed";
 
 export interface AppState {
     roomJoinState: RoomJoinState;
     roomCreateState: RoomCreateState;
+    sessionState: SessionState;
+    currentSession?: SessionInfo;
+    roomAdminClient?: RoomAdminApiClient;
 }
 const options: StoreOptions<AppState> = {
     state: {
         roomJoinState: "normal",
-        roomCreateState: "normal"
+        roomCreateState: "normal",
+        sessionState: "normal",
+        currentSession: {
+            title: "スマート研究室を作ろう",
+            sessionNumber: 1,
+            attr: {
+                isFirst: false,
+                isLast: false
+            }
+        }
     },
     mutations: {
         changeRoomJoinState(s, newState: RoomJoinState) {
@@ -28,6 +45,15 @@ const options: StoreOptions<AppState> = {
         },
         changeRoomCreateState(s, newState: RoomCreateState) {
             s.roomCreateState = newState;
+        },
+        updateCurrentSession(s, newSession: SessionInfo) {
+            s.currentSession = newSession;
+        },
+        setRoomAdminClient(s, c: RoomAdminApiClient) {
+            s.roomAdminClient = c;
+        },
+        changeSessionState(s, newState: SessionState) {
+            s.sessionState = newState;
         }
     },
     actions: {
@@ -36,24 +62,57 @@ const options: StoreOptions<AppState> = {
         },
         async requestCreateNewRoom({ commit }, roomConfig: RoomConfiguration) {
             // ルーム作成中
-            commit(types.CHANGE_ROOM_CREATE_STATE, "creating");
+            commit(mutationtypes.CHANGE_ROOM_CREATE_STATE, "creating");
             const roomAdminClient = await client.createRoom(roomConfig);
             if (roomAdminClient !== undefined) {
+                commit("setRoomAdminClient", roomAdminClient);
                 // 管理画面に遷移する
                 router.push({ path: "/admin" });
             } else {
-                commit(types.CHANGE_ROOM_CREATE_STATE, "failed");
+                commit(mutationtypes.CHANGE_ROOM_CREATE_STATE, "failed");
             }
         },
         async joinRoom({ commit }, roomName: string) {
             // ルーム参加中
-            commit(types.CHANGE_ROOM_JOIN_STATE, "joining");
+            commit(mutationtypes.CHANGE_ROOM_JOIN_STATE, "joining");
             const roomClient = await client.joinRoom(roomName);
             if (roomClient !== undefined) {
                 // ルーム画面に遷移する
                 router.push({ path: "/roomhome" });
             } else {
-                commit(types.CHANGE_ROOM_JOIN_STATE, "failed");
+                commit(mutationtypes.CHANGE_ROOM_JOIN_STATE, "failed");
+            }
+        },
+        async requestGotoNextSession({ commit, state }) {
+            // セッションを移動中
+            commit(mutationtypes.CHANGE_SESSION_STATE, "changing");
+            const c = state.roomAdminClient || new RoomAdminApiClient();
+            if (c !== undefined) {
+                const newSession = await c.gotoNextSession();
+                if (newSession !== undefined) {
+                    commit(mutationtypes.UPDATE_CURRENT_SESSION, newSession);
+                    commit(mutationtypes.CHANGE_SESSION_STATE, "normal");
+                } else {
+                    commit(mutationtypes.CHANGE_SESSION_STATE, "failed");
+                }
+            } else {
+                commit(mutationtypes.CHANGE_SESSION_STATE, "failed");
+            }
+        },
+        async requestGotoPreviousSession({ commit, state }) {
+            // セッションを移動中
+            commit(mutationtypes.CHANGE_SESSION_STATE, "changing");
+            const c = state.roomAdminClient || new RoomAdminApiClient();
+            if (c !== undefined) {
+                const newSession = await c.gotoPreviousSession();
+                if (newSession !== undefined) {
+                    commit(mutationtypes.UPDATE_CURRENT_SESSION, newSession);
+                    commit(mutationtypes.CHANGE_SESSION_STATE, "normal");
+                } else {
+                    commit(mutationtypes.CHANGE_SESSION_STATE, "failed");
+                }
+            } else {
+                commit(mutationtypes.CHANGE_SESSION_STATE, "failed");
             }
         }
     }
