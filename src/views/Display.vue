@@ -13,6 +13,8 @@ import Component from "vue-class-component";
 import PointItem from "../components/pointItem.vue";
 import Container from "../components/container.vue";
 import { PointItemModel } from "../models/pointItemModel";
+import { SessionInfo } from "../api/HeeApiClient";
+import { ReactionData } from "../settings";
 
 @Component({
   components: {
@@ -21,20 +23,13 @@ import { PointItemModel } from "../models/pointItemModel";
   }
 })
 export default class Display extends Vue {
-  items: PointItemModel[] = [
-    {
-      itemName: "へぇ",
-      point: 74
-    },
-    {
-      itemName: "わかる",
-      point: 23
-    },
-    {
-      itemName: "!?",
-      point: 97
-    }
-  ];
+  get items(): PointItemModel[] {
+    const session = this.$store.state.currentSession as SessionInfo;
+    return session.reactions.map(x => ({
+      itemName: ReactionData.find(y => y.id == x.id)!!.displayName,
+      point: x.count
+    }));
+  }
 }
 </script>
 
@@ -46,4 +41,3 @@ div#point-item-wrapper {
   flex-wrap: wrap;
 }
 </style>
-

@@ -1,5 +1,10 @@
 import { RoomConfiguration, Session } from "../models/RoomConfiguration";
 import { resolve } from "url";
+import { inherits } from "util";
+import store from "../vuex/store";
+import { mutationtypes } from "../vuex/types";
+
+export type ReactionId = number;
 
 class HeeApiClient {
     private static DUMMY_ROOMS = [
@@ -30,10 +35,28 @@ class HeeApiClient {
 }
 
 export class RoomApiClient {
-
+    makeReaction(reactionId: ReactionId) {
+        store.commit(mutationtypes.ADD_CURRENT_SESSION_REACTION, {
+            id: reactionId,
+            count: 1
+        });
+    }
 }
 
 export class RoomAdminApiClient extends RoomApiClient {
+    initialCount = [
+        {
+            id: 0,
+            count: 0
+        }, {
+            id: 1,
+            count: 0
+        }, {
+            id: 2,
+            count: 0
+        }
+    ];
+
     gotoPreviousSession(): Promise<SessionInfo | undefined> {
         return new Promise((resolve) => {
             setTimeout(() => {
@@ -43,7 +66,8 @@ export class RoomAdminApiClient extends RoomApiClient {
                     attr: {
                         isFirst: true,
                         isLast: false
-                    }
+                    },
+                    reactions: this.initialCount
                 });
             }, 1000);
         });
@@ -58,7 +82,8 @@ export class RoomAdminApiClient extends RoomApiClient {
                     attr: {
                         isFirst: false,
                         isLast: true
-                    }
+                    },
+                    reactions: this.initialCount
                 });
             }, 1000);
         });
@@ -73,11 +98,17 @@ export class RoomAdminApiClient extends RoomApiClient {
                     attr: {
                         isFirst: false,
                         isLast: false
-                    }
+                    },
+                    reactions: this.initialCount
                 });
             }, 1000);
         });
     }
+}
+
+interface Reaction {
+    readonly id: ReactionId;
+    count: number;
 }
 
 export interface SessionInfo {
@@ -87,6 +118,7 @@ export interface SessionInfo {
         isFirst: boolean;
         isLast: boolean;
     };
+    reactions: Reaction[];
 }
 
 export const client = new HeeApiClient();

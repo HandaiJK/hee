@@ -2,7 +2,8 @@ export const mutationtypes = {
     CHANGE_ROOM_JOIN_STATE: "changeRoomJoinState",
     CHANGE_ROOM_CREATE_STATE: "changeRoomCreateState",
     UPDATE_CURRENT_SESSION: "updateCurrentSession",
-    CHANGE_SESSION_STATE: "changeSessionState"
+    CHANGE_SESSION_STATE: "changeSessionState",
+    ADD_CURRENT_SESSION_REACTION: "addCurrentSessionReactions"
 };
 
 export const actiontypes = {

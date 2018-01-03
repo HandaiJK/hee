@@ -11,9 +11,15 @@
 <h1 id="reactions">REACTIONS</h1>        
     </div>
     <div id="buttons-wrapper">
-<button class="btn-blue">へぇ</button>
-<button class="btn-purple">わかる</button>
-<button class="btn-green">!?</button>
+      <div v-for="r in reactions" :key="r.id">
+        <button :class="'btn-' + r.color" 
+        @click="onReactionButtonClicked(r.id)">
+       {{ r.displayName }}
+     </button> 
+     <p>
+       + {{ r.count }}
+     </p>
+      </div>
     </div>
 </container>
 </template>
@@ -22,13 +28,35 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import Container from "../components/container.vue";
+import { RoomApiClient } from "../api/HeeApiClient";
+import { ReactionInfo, ReactionData, ReactionId } from "../settings";
+
+interface Reaction extends ReactionInfo {
+  count: number;
+}
 
 @Component({
   components: {
     Container
   }
 })
-export default class RoomHome extends Vue {}
+export default class RoomHome extends Vue {
+  reactions: Reaction[] = ReactionData.map(x => {
+    return {
+      ...x,
+      count: 0
+    };
+  });
+
+  private getApiClient(): RoomApiClient {
+    return this.$store.state.roomApiClient;
+  }
+
+  onReactionButtonClicked(reactionId: ReactionId) {
+    this.getApiClient().makeReaction(reactionId);
+    this.reactions[reactionId].count++;
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -63,22 +91,13 @@ h1#reactions {
   }
 
   .btn-blue {
-    background: linear-gradient(
-      to right,
-      #5b86e5,
-      #36d1dc
-    ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background: linear-gradient(to right, #5b86e5, #36d1dc);
   }
   .btn-purple {
-    background: linear-gradient(
-      to right,
-      #1d2671,
-      #c33764
-    ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background: linear-gradient(to right, #1d2671, #c33764);
   }
   .btn-green {
     background: linear-gradient(to right, #93f9b9, #1d976c);
-    /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
   }
 }
 </style>

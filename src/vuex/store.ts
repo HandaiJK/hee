@@ -4,7 +4,7 @@ import Vue from "vue";
 import Vuex from "vuex";
 import { Store, StoreOptions } from "vuex";
 Vue.use(Vuex);
-import { client, RoomAdminApiClient } from "../api/HeeApiClient";
+import { client, RoomAdminApiClient, RoomApiClient } from "../api/HeeApiClient";
 import { mutationtypes } from "./types";
 import { router } from "../router";
 import { RoomConfiguration } from "../models/RoomConfiguration";
@@ -24,6 +24,7 @@ export interface AppState {
     sessionState: SessionState;
     currentSession?: SessionInfo;
     roomAdminClient?: RoomAdminApiClient;
+    roomApiClient: RoomApiClient;
 }
 const options: StoreOptions<AppState> = {
     state: {
@@ -36,8 +37,21 @@ const options: StoreOptions<AppState> = {
             attr: {
                 isFirst: false,
                 isLast: false
-            }
-        }
+            },
+            reactions: [
+                {
+                    id: 0,
+                    count: 0
+                }, {
+                    id: 1,
+                    count: 0
+                }, {
+                    id: 2,
+                    count: 0
+                }
+            ],
+        },
+        roomApiClient: new RoomApiClient()
     },
     mutations: {
         changeRoomJoinState(s, newState: RoomJoinState) {
@@ -54,6 +68,11 @@ const options: StoreOptions<AppState> = {
         },
         changeSessionState(s, newState: SessionState) {
             s.sessionState = newState;
+        },
+        addCurrentSessionReaction(s, payload) {
+            if (s.currentSession) {
+                s.currentSession.reactions.find(x => x.id == payload.id)!!.count += payload.count;
+            }
         }
     },
     actions: {
